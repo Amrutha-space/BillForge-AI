@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLATFORM_ADMIN
+  COMPANY_ADMIN
+  CUSTOMER
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELED
+}
+
+enum PaymentStatus {
+  REQUIRES_ACTION
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+model Company {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  stripeCustomerId String?
+
+  users            User[]
+  customers        Customer[]
+  invoices         Invoice[]
+  payments         Payment[]
+  subscriptions    Subscription[]
+  predictions      Prediction[]
+
+  @@index([createdAt])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  companyId    String?
+  company      Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+}
+
+model Customer {
+  id           String   @id @default(cuid())
+  email        String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  invoices     Invoice[]
+
+  @@unique([companyId, email])
+  @@index([companyId])
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  invoiceId   String        @unique
+  amountCents Int
+  currency    String        @default("usd")
+  dueDate     DateTime
+  status      InvoiceStatus @default(DRAFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  companyId   String
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId  String
+  customer    Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  payments    Payment[]
+  prediction  Prediction?
+
+  @@index([companyId, createdAt])
+  @@index([companyId, status])
+  @@index([customerId])
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  amountCents      Int
+  currency         String        @default("usd")
+  status           PaymentStatus
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  stripePaymentIntentId String?
+  stripeCheckoutSessionId String?
+
+  companyId        String
+  company          Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  invoiceId        String?
+  invoice          Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, createdAt])
+  @@index([invoiceId])
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  plan                 String
+  status               SubscriptionStatus
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  stripeCheckoutSessionId String?
+
+  companyId            String
+  company              Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
+  @@index([status])
+}
+
+model Prediction {
+  id               String   @id @default(cuid())
+  riskScore        Float
+  delayProbability Float
+  modelVersion     String
+  createdAt        DateTime @default(now())
+
+  companyId        String
+  company          Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  invoiceId        String   @unique
+  invoice          Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
+}
+

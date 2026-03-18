@@ -1,0 +1,26 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.routes import router as api_router
+
+app = FastAPI(
+    title="SmartBill AI Prediction Service",
+    version="1.0.0",
+    description="Invoice late-payment risk scoring API",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(api_router)
+
+
+@app.get("/health")
+def health():
+    return {"ok": True}
+
