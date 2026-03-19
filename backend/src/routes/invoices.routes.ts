@@ -96,7 +96,11 @@ invoicesRouter.post(
  */
 invoicesRouter.get("/:id", requireAuth, requireCompanyContext, async (req, res, next) => {
   try {
-    const invoice = await getInvoice(req.auth!.companyId!, req.params.id);
+    const invoiceId = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
+    
+    const invoice = await getInvoice(req.auth!.companyId!, invoiceId as string);
     res.json(invoice);
   } catch (err) {
     next(err);
@@ -124,7 +128,13 @@ invoicesRouter.post(
   requireRole(["COMPANY_ADMIN", "PLATFORM_ADMIN"]),
   async (req, res, next) => {
     try {
-      const invoice = await getInvoice(req.auth!.companyId!, req.params.id);
+      const invoiceId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const invoice = await getInvoice(
+        req.auth!.companyId!, 
+        invoiceId as string
+      );
 
       const customer_history = await prisma.invoice.count({
         where: { companyId: req.auth!.companyId!, customerId: invoice.customerId }
