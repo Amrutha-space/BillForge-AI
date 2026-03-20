@@ -29,7 +29,7 @@ export function createApp() {
   app.use(helmet());
   app.use(
     cors({
-      origin: env.FRONTEND_URL,
+      origin: "https://bill-forge-ai-98x.vercel.app",
       credentials: true
     })
   );
