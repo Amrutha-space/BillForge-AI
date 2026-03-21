@@ -28,8 +28,12 @@ export function createApp() {
 
   app.use(helmet());
   app.use(
+
     cors({
-      origin: "https://bill-forge-ai-98x.vercel.app",
+      origin: [
+      "http://localhost:3000", //  local dev
+      "https://bill-forge-ai-98x.vercel.app" 
+      ],
       credentials: true
     })
   );

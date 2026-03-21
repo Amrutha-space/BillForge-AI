@@ -21,11 +21,24 @@ export default function SignupPage() {
   const router = useRouter();
   const signup = useMutation({
     mutationFn: async (payload: z.infer<typeof Schema>) => {
+      console.log("📡 Sending request:", payload);
+
       const parsed = Schema.parse(payload);
-      await api.post("/api/auth/signup", parsed);
-    },
-    onSuccess: () => router.push("/dashboard")
-  });
+
+      const res = await api.post("/api/auth/signup", parsed);
+
+      console.log("Response:", res.data);
+      },
+
+  onError: (error: any) => {
+    console.error("❌ FULL ERROR:", error);
+
+    // 👇 THIS IS THE MOST IMPORTANT LINE
+    console.error("❌ SERVER RESPONSE:", error?.response?.data);
+  },
+
+  onSuccess: () => router.push("/dashboard")
+});
 
   return (
     <div className="relative min-h-screen">
@@ -47,10 +60,10 @@ export default function SignupPage() {
                   e.preventDefault();
                   const fd = new FormData(e.currentTarget);
                   signup.mutate({
-                    email: String(fd.get("email")),
-                    password: String(fd.get("password")),
-                    companyName: String(fd.get("companyName")),
-                    companySlug: String(fd.get("companySlug"))
+                    email: String(fd.get("email")).trim(),
+                    password: String(fd.get("password")).trim(),
+                    companyName: String(fd.get("companyName")).trim(),
+                    companySlug: String(fd.get("companySlug")).trim().toLowerCase()
                   });
                 }}
               >
@@ -70,7 +83,7 @@ export default function SignupPage() {
                     required
                     className="h-11 rounded-xl bg-white/5 border border-white/10 px-3 outline-none focus:border-white/20"
                     placeholder="acme-inc"
-                    pattern="^[-a-z0-9]+$"
+                    pattern="[a-z0-9-]+"
                     title="Only lowercase letters, numbers, and hyphens are allowed"
                   />
                 </label>
