@@ -14,5 +14,4 @@ RUN npm run build
 
 EXPOSE 8080
 
-CMD ["npm", "run", "start"]
-
+CMD ["sh", "-c", "npx prisma db push && npm run start"]
