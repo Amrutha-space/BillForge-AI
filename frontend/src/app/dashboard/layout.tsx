@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, clearAccessToken } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onSubmit={async (e) => {
                 e.preventDefault();
                 await api.post("/api/auth/logout");
+                clearAccessToken();
                 router.replace("/login");
               }}
             >
@@ -85,4 +86,3 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   );
 }
-

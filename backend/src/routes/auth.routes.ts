@@ -8,6 +8,17 @@ import { requireAuth } from "../middleware/auth";
 
 export const authRouter = Router();
 
+function getAuthCookieOptions() {
+  const isProduction = env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    sameSite: isProduction ? ("none" as const) : ("lax" as const),
+    secure: isProduction,
+    maxAge: env.JWT_ACCESS_TTL_SECONDS * 1000,
+    path: "/"
+  };
+}
+
 /**
  * @openapi
  * /api/auth/signup:
@@ -43,12 +54,7 @@ authRouter.post("/signup", async (req, res, next) => {
 
     const result = await signup(body);
     res
-      .cookie("access_token", result.accessToken, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: env.NODE_ENV === "production",
-        maxAge: env.JWT_ACCESS_TTL_SECONDS * 1000
-      })
+      .cookie("access_token", result.accessToken, getAuthCookieOptions())
       .status(StatusCodes.OK)
       .json({ accessToken: result.accessToken });
   } catch (err) {
@@ -87,12 +93,7 @@ authRouter.post("/login", async (req, res, next) => {
 
     const result = await login(body);
     res
-      .cookie("access_token", result.accessToken, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: env.NODE_ENV === "production",
-        maxAge: env.JWT_ACCESS_TTL_SECONDS * 1000
-      })
+      .cookie("access_token", result.accessToken, getAuthCookieOptions())
       .status(StatusCodes.OK)
       .json({ accessToken: result.accessToken });
   } catch (err) {
@@ -111,7 +112,7 @@ authRouter.post("/login", async (req, res, next) => {
  *         description: No Content
  */
 authRouter.post("/logout", (_req, res) => {
-  res.clearCookie("access_token").status(StatusCodes.NO_CONTENT).send();
+  res.clearCookie("access_token", getAuthCookieOptions()).status(StatusCodes.NO_CONTENT).send();
 });
 
 /**
@@ -129,4 +130,3 @@ authRouter.post("/logout", (_req, res) => {
 authRouter.get("/me", requireAuth, async (req, res) => {
   res.json({ userId: req.auth!.userId, role: req.auth!.role, companyId: req.auth!.companyId ?? null });
 });
-

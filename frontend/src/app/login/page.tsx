@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import { z } from "zod";
-import { api } from "@/lib/api";
+import { api, persistAccessToken } from "@/lib/api";
 import { FintechBackground } from "@/components/FintechBackground";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/Button";
@@ -20,10 +21,16 @@ export default function LoginPage() {
   const login = useMutation({
     mutationFn: async (payload: { email: string; password: string }) => {
       const parsed = Schema.parse(payload);
-      await api.post("/api/auth/login", parsed);
+      const response = await api.post<{ accessToken: string }>("/api/auth/login", parsed);
+      persistAccessToken(response.data.accessToken);
+      return response.data;
     },
     onSuccess: () => router.push("/dashboard")
   });
+
+  const errorMessage = axios.isAxiosError(login.error)
+    ? login.error.response?.data?.error?.message ?? "Login failed. Please try again."
+    : "Login failed. Please try again.";
 
   return (
     <div className="relative min-h-screen">
@@ -70,7 +77,7 @@ export default function LoginPage() {
                   {login.isPending ? "Signing in..." : "Sign in"}
                 </Button>
 
-                {login.isError && <div className="text-sm text-red-300">Invalid credentials.</div>}
+                {login.isError && <div className="text-sm text-red-300">{errorMessage}</div>}
               </form>
 
               <div className="mt-5 text-sm text-white/70">
@@ -87,4 +94,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

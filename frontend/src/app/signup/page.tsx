@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import { z } from "zod";
-import { api } from "@/lib/api";
+import { api, persistAccessToken } from "@/lib/api";
 import { FintechBackground } from "@/components/FintechBackground";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/Button";
@@ -21,24 +22,17 @@ export default function SignupPage() {
   const router = useRouter();
   const signup = useMutation({
     mutationFn: async (payload: z.infer<typeof Schema>) => {
-      console.log("📡 Sending request:", payload);
-
       const parsed = Schema.parse(payload);
+      const response = await api.post<{ accessToken: string }>("/api/auth/signup", parsed);
+      persistAccessToken(response.data.accessToken);
+      return response.data;
+    },
+    onSuccess: () => router.push("/dashboard")
+  });
 
-      const res = await api.post("/api/auth/signup", parsed);
-
-      console.log("Response:", res.data);
-      },
-
-  onError: (error: any) => {
-    console.error("❌ FULL ERROR:", error);
-
-    // 👇 THIS IS THE MOST IMPORTANT LINE
-    console.error("❌ SERVER RESPONSE:", error?.response?.data);
-  },
-
-  onSuccess: () => router.push("/dashboard")
-});
+  const errorMessage = axios.isAxiosError(signup.error)
+    ? signup.error.response?.data?.error?.message ?? "Signup failed. Please try again."
+    : "Signup failed. Please try again.";
 
   return (
     <div className="relative min-h-screen">
@@ -113,7 +107,7 @@ export default function SignupPage() {
                   {signup.isPending ? "Creating..." : "Create account"}
                 </Button>
 
-                {signup.isError && <div className="text-sm text-red-300">Signup failed. Try a different email/slug.</div>}
+                {signup.isError && <div className="text-sm text-red-300">{errorMessage}</div>}
               </form>
 
               <div className="mt-5 text-sm text-white/70">
@@ -130,4 +124,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
