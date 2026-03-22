@@ -66,4 +66,3 @@ services:
 volumes:
   smartbill_pg:
   grafana_data:
-

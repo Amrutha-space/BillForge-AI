@@ -9,4 +9,3 @@ export const api = axios.create({
 });
 
 export type AuthMe = { userId: string; role: "PLATFORM_ADMIN" | "COMPANY_ADMIN" | "CUSTOMER"; companyId: string | null };
-
