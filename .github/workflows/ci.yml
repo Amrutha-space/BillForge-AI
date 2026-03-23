@@ -1,17 +1,21 @@
-name: CI Build
+name: CI
 
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
-  build:
+  frontend:
+    name: Frontend Build
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: frontend
     env:
-      NEXT_DISABKE_SWC_NATIVE: true
-
+      NEXT_DISABLE_SWC_NATIVE: true
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:8080
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,23 +23,65 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      # FRONTEND FIX
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: |
-          npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build frontend
-        working-directory: frontend
         run: npm run build
 
-      # BACKEND
-      - name: Install backend dependencies
+  backend:
+    name: Backend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
         working-directory: backend
-        run: npm install
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/smartbill?schema=public
+      JWT_SECRET: github-actions-jwt-secret-1234
+      FRONTEND_URL: http://localhost:3000
+      BACKEND_URL: http://localhost:8080
+      AI_SERVICE_URL: http://localhost:8001
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
 
       - name: Build backend
-        working-directory: backend
-        run: npm run build || echo "No build step"
+        run: npm run build
+
+  ai-service:
+    name: AI Service Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-service
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Compile Python files
+        run: python -m compileall app
