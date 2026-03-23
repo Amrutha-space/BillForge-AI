@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes import router as api_router
 
 app = FastAPI(
-    title="SmartBill AI Prediction Service",
+    title="BillForge AI Prediction Service",
     version="1.0.0",
     description="Invoice late-payment risk scoring API",
 )

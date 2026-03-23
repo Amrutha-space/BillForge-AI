@@ -22,7 +22,7 @@ export default function HomePage() {
                 Billing, payments, and <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">AI risk</span> — unified.
               </h1>
               <p className="mt-4 text-white/70 leading-relaxed max-w-xl">
-                SmartBill AI helps multi-tenant SaaS companies automate invoicing, collect payments with Stripe, and
+                BillForge AI helps multi-tenant SaaS companies automate invoicing, collect payments with Stripe, and
                 predict late-payment risk before it hits your cashflow.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
