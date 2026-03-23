@@ -2,13 +2,16 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json tsconfig.json next.config.ts postcss.config.mjs tailwind.config.ts next-env.d.ts ./
-COPY src ./src
+COPY package.json tsconfig.json ./
+COPY prisma ./prisma
 
 RUN npm install
+RUN npx prisma generate
+
+COPY src ./src
+
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 8080
 
-CMD ["npm", "run", "start"]
-
+CMD ["sh", "-c", "npx prisma db push && npm run start"]
