@@ -1,5 +1,5 @@
-BillForge AI
-============
+ BillForge AI
+ ============
 
 BillForge AI is a multi-tenant fintech SaaS billing automation platform inspired by products like Stripe and InvoiceCloud.
 It provides subscription billing, invoice management, Stripe-based payments, AI-powered late payment risk predictions, and analytics dashboards.
@@ -19,6 +19,9 @@ It provides subscription billing, invoice management, Stripe-based payments, AI-
 - **AI Prediction Service** for late payment risk scoring
 - **Analytics Service** for revenue, invoices, and risk summary
 - **Notification Service** (email stub) for invoice lifecycle events
+
+  🔗 Live Demo: 
+ ` https://bill-forge-ai-98x.vercel.app `
 
 ## Quick Start
 
