@@ -9,32 +9,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      #  FRONTEND
-      - name: Install frontend deps
-        run: |
+      # Frontend
+      - run: |
           cd frontend
           npm install
-
-      - name: Build frontend
-        run: |
-          cd frontend
           npm run build
 
-      #  BACKEND
-      - name: Install backend deps
-        run: |
+      # Backend
+      - run: |
           cd backend
           npm install
-
-      - name: Build backend
-        run: |
-          cd backend
-          npm run build || echo "No build step"
+          npm run build || echo "no build"
