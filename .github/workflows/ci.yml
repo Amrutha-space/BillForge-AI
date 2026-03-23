@@ -1,4 +1,4 @@
-name: build-and-test
+name: CI Build
 
 on:
   push:
@@ -9,20 +9,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      # Setup Node
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # Frontend
-      - run: |
+      # FRONTEND
+      - name: Install frontend dependencies
+        run: |
           cd frontend
           npm install
+
+      - name: Build frontend
+        run: |
+          cd frontend
           npm run build
 
-      # Backend
-      - run: |
+      # BACKEND
+      - name: Install backend dependencies
+        run: |
           cd backend
           npm install
-          npm run build || echo "no build"
+
+      - name: Build backend
+        run: |
+          cd backend
+          npm run build || echo "No build step"
