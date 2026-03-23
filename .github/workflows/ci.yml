@@ -9,6 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      NEXT_DISABKE_SWC_NATIVE: true
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,18 +21,17 @@ jobs:
         with:
           node-version: 18
 
-      # Frontend
+      # FRONTEND FIX
       - name: Install frontend dependencies
         working-directory: frontend
         run: |
-          rm -rf node_modules package-lock.json
-          npm install
+          npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
       - name: Build frontend
         working-directory: frontend
         run: npm run build
 
-      # Backend
+      # BACKEND
       - name: Install backend dependencies
         working-directory: backend
         run: npm install
